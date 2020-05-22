@@ -1,0 +1,69 @@
+name: frailtyprojectweb
+description: A new Flutter application.
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  bloc: ^4.0.0
+  flutter_bloc: ^4.0.0
+  shared_preferences: ^0.5.7+2
+  syncfusion_flutter_charts: ^18.1.53
+  universal_html: ^1.2.2
+  uuid: ^2.0.4
+  http: ^0.12.1
+  json_serializable: ^3.3.0
+  intl: ^0.16.1
+  google_fonts: ^1.1.0
+  cupertino_tabbar: ^1.0.1
+
+  qr_flutter: ^3.2.0
+  csv: ^4.0.3
+
+  flutter_spinkit: ^4.1.2+1
+
+  cupertino_icons: ^0.1.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+
+  fonts:
+    - family: SukhumvitSet
+      fonts:
+        - asset: fonts/SukhumvitSet-Text.ttf
+          weight: 400
+        - asset: fonts/SukhumvitSet-Bold.ttf
+          weight: 700
+        - asset: fonts/SukhumvitSet-Light.ttf
+          weight: 300
+        - asset: fonts/SukhumvitSet-Medium.ttf
+          weight: 500
+        - asset: fonts/SukhumvitSet-SemiBold.ttf
+          weight: 600
+    - family: THSarabunNew
+      fonts:
+        - asset: fonts/THSarabunNew Bold.ttf
+          weight: 700
+        - asset: fonts/THSarabunNew BoldItalic.ttf
+          weight: 700
+        - asset: fonts/THSarabunNew Italic.ttf
+          weight: 400
+        - asset: fonts/THSarabunNew.ttf
+          weight: 400
+    - family : Itim
+      fonts :
+        - asset : fonts/Itim-Regular.ttf
+          weight: 500
+
+
