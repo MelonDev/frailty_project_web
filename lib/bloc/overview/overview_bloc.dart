@@ -11,6 +11,7 @@ import 'package:frailtyprojectweb/model/ResponseValue.dart';
 import 'package:frailtyprojectweb/model/ResultAfterProcess.dart';
 import 'package:frailtyprojectweb/tools/DateTools.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
 
 import 'package:http/http.dart' as http;
@@ -57,12 +58,12 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
 
     var responses = await http.post(urls,
         headers: {"Content-Type": "application/json"}, body: json.encode(maps));
-    print(responses.body);
+    //print(responses.body);
 
     List jsonResponseS = json.decode(responses.body);
     List<Answer> listS =
         jsonResponseS.map((code) => new Answer.fromJsonReport(code)).toList();
-    print(listS.length);
+    //print(listS.length);
 
     int countMale = 0;
     int countFemale = 0;
@@ -76,7 +77,7 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
       var responsess = await http.post(urlss,
           headers: {"Content-Type": "application/json"},
           body: json.encode(mapss));
-      print(responsess.body);
+      //print(responsess.body);
 
       ResponseValue responseValue =
           ResponseValue.fromJson(jsonDecode(responsess.body));
@@ -91,6 +92,8 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
     int fraity = 0;
     int preFraity = 0;
     int nonFraity = 0;
+    int notSupport = 0;
+
     int normal = 0;
     int personnel = 0;
 
@@ -101,27 +104,32 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
           "https://melondev-frailty-project.herokuapp.com/api/result/calculating";
 
       Map map = {
-        "key": element.question.questionnaireId,
-        "answerPackId": element.answerPack,
-        "questionnaireName": "",
-        "dateTime": "2020-01-01T00:00:00Z",
+        "questionnaireName": element.question.questionnaireId,
+        "answerPackId": element.answerPack
       };
 
       var response = await http.post(url,
           headers: {"Content-Type": "application/json"},
           body: json.encode(map));
 
+      //print("calculating: ${response.body}");
+
       ResultAfterProcess resultAfterProcess =
           ResultAfterProcess.fromJson(jsonDecode(response.body));
 
       listReport.add(ReportPackWithAnswer(element, resultAfterProcess));
 
-      if (resultAfterProcess.percent <= 12) {
-        nonFraity += 1;
-      } else if (resultAfterProcess.percent <= 52) {
-        preFraity += 1;
-      } else if (resultAfterProcess.percent <= 100) {
-        fraity += 1;
+      if (element.question.questionnaire.id
+          .contains("24129d77-f289-4634-a34f-e00c623ccf5f".toUpperCase())) {
+        if (resultAfterProcess.percent <= 12) {
+          nonFraity += 1;
+        } else if (resultAfterProcess.percent <= 52) {
+          preFraity += 1;
+        } else if (resultAfterProcess.percent <= 100) {
+          fraity += 1;
+        }
+      } else {
+        notSupport += 1;
       }
 
       if (element.answerPackDetail.taker.personnel) {
@@ -132,7 +140,9 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
     }
 
     List<PieForm> list = _compressListPieForm(countMale, countFemale, fraity,
-        preFraity, nonFraity, normal, personnel);
+        preFraity, nonFraity, notSupport, normal, personnel);
+
+    listReport.sort((a, b) => b.answer.answerPackDetail.dateTime.compareTo(a.answer.answerPackDetail.dateTime));
 
     List<DataRow> listDataRow = await _packData(listReport);
 
@@ -147,7 +157,7 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
             ResponseIntValue.fromJson(json.decode(responseMale.body));
          */
 
-    print(responseMale.body);
+    //print(responseMale.body);
 
     List jsonResponseMale = json.decode(responseMale.body);
     List<Answer> listMale = jsonResponseMale
@@ -156,7 +166,7 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
 
     int countMale = listMale.length;
 
-    print(countMale);
+    //print(countMale);
 
     String urlFemale =
         "https://melondev-frailty-project.herokuapp.com/api/overview/getAllFemale";
@@ -164,7 +174,7 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
     /*ResponseIntValue valueFemale =
             ResponseIntValue.fromJson(json.decode(responseFemale.body));
          */
-    print(responseFemale.body);
+    //print(responseFemale.body);
 
     List jsonResponseFemale = json.decode(responseFemale.body);
     List<Answer> listFemale = jsonResponseFemale
@@ -175,10 +185,10 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
     int fraity = 0;
     int preFraity = 0;
     int nonFraity = 0;
+    int notSupport = 0;
+
     int normal = 0;
     int personnel = 0;
-
-
 
     List<Answer> newList = new List.from(listMale)..addAll(listFemale);
 
@@ -189,10 +199,8 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
           "https://melondev-frailty-project.herokuapp.com/api/result/calculating";
 
       Map map = {
-        "key": element.question.questionnaireId,
-        "answerPackId": element.answerPack,
-        "questionnaireName": "",
-        "dateTime": "2020-01-01T00:00:00Z",
+        "questionnaireName": element.question.questionnaireId,
+        "answerPackId": element.answerPack
       };
 
       var response = await http.post(url,
@@ -202,16 +210,19 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
       ResultAfterProcess resultAfterProcess =
           ResultAfterProcess.fromJson(jsonDecode(response.body));
 
-      print("element.answerPackDetail == null ${element.answerPackDetail == null}");
-
       listReport.add(ReportPackWithAnswer(element, resultAfterProcess));
 
-      if (resultAfterProcess.percent <= 12) {
-        nonFraity += 1;
-      } else if (resultAfterProcess.percent <= 52) {
-        preFraity += 1;
-      } else if (resultAfterProcess.percent <= 100) {
-        fraity += 1;
+      if (element.question.questionnaire.id
+          .contains("24129d77-f289-4634-a34f-e00c623ccf5f".toUpperCase())) {
+        if (resultAfterProcess.percent <= 12) {
+          nonFraity += 1;
+        } else if (resultAfterProcess.percent <= 52) {
+          preFraity += 1;
+        } else if (resultAfterProcess.percent <= 100) {
+          fraity += 1;
+        }
+      } else {
+        notSupport += 1;
       }
 
       if (element.answerPackDetail != null) {
@@ -224,15 +235,25 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
     }
 
     List<PieForm> list = _compressListPieForm(countMale, countFemale, fraity,
-        preFraity, nonFraity, normal, personnel);
+        preFraity, nonFraity, notSupport, normal, personnel);
+
+    listReport.sort((a, b) => b.answer.answerPackDetail.dateTime.compareTo(a.answer.answerPackDetail.dateTime));
+
 
     List<DataRow> listDataRow = await _packData(listReport);
 
     yield ReadyOverviewState(list, "ทั่วประเทศ", listDataRow, listReport);
   }
 
-  List<PieForm> _compressListPieForm(int countMale, int countFemale,
-      int frailty, int preFrailty, int nonFrailty, int normal, int personnel) {
+  List<PieForm> _compressListPieForm(
+      int countMale,
+      int countFemale,
+      int frailty,
+      int preFrailty,
+      int nonFrailty,
+      int notSupport,
+      int normal,
+      int personnel) {
     return [
       PieForm(
         "แยกตามเพศ",
@@ -253,10 +274,10 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
         "แยกตามความเสี่ยง",
         [
           ChartData(
-              x: "ไม่เป็น $nonFrailty คน",
-              //y: valueMale.value.toDouble(),
-              y: nonFrailty.toDouble(),
-              color: Colors.blueAccent,
+              x: "เป็น $frailty คน",
+              //y: valueFemale.value.toDouble(),
+              y: frailty.toDouble(),
+              color: Colors.redAccent,
               text: ""),
           ChartData(
               x: "เสี่ยง $preFrailty คน",
@@ -265,10 +286,16 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
               color: Colors.amber,
               text: ""),
           ChartData(
-              x: "เป็น $frailty คน",
-              //y: valueFemale.value.toDouble(),
-              y: frailty.toDouble(),
-              color: Colors.redAccent,
+              x: "ไม่เป็น $nonFrailty คน",
+              //y: valueMale.value.toDouble(),
+              y: nonFrailty.toDouble(),
+              color: Colors.blueAccent,
+              text: ""),
+          ChartData(
+              x: "ไม่รองรับ $notSupport ชุด",
+              //y: valueMale.value.toDouble(),
+              y: notSupport.toDouble(),
+              color: Color(0xFFBDBDBD),
               text: ""),
         ],
       ),
@@ -295,8 +322,6 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
   }
 
   Future<List<DataRow>> _packData(List<ReportPackWithAnswer> listAnswer) async {
-
-
     List<DataRow> list = listAnswer
         .map((value) => DataRow(
                 onSelectChanged: (newValue) {
@@ -310,10 +335,20 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
                       ? _initialDateString(DateTime.parse(
                           value.answer.answerPackDetail.dateTime))
                       : "")),
+                  DataCell(_initialText(value.answer.answerPackDetail != null
+                      ? _initialTimeString(DateTime.parse(
+                          value.answer.answerPackDetail.dateTime))
+                      : "")),
                   DataCell(_initialText(
-                      _convertScoreToString(value.result.percent),
-                      color: _convertScoreToColor(value.result.percent))),
+                      _convertScoreToString(
+                          value.answer.question.questionnaire.id,
+                          value.result.percent),
+                      color: _convertScoreToColor(
+                          value.answer.question.questionnaire.id,
+                          value.result.percent))),
                   //DataCell(_initialText(_initialDateString(value.birthDate))),
+                  DataCell(_initialText(
+                      "${(value.result.score).toStringAsFixed(0)}")),
                   DataCell(_initialText(value.answer.answerPackDetail != null
                       ? "${value.answer.answerPackDetail.taker.firstName} ${value.answer.answerPackDetail.taker.lastName}"
                       : "")),
@@ -332,19 +367,23 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
     return list;
   }
 
-  String _convertScoreToString(double value) {
-    if (value <= 12) {
-      return "ไม่เป็น";
-    } else if (value <= 52) {
-      return "เสี่ยง";
-    } else if (value <= 100) {
-      return "เป็น";
+  String _convertScoreToString(String id, double value) {
+    if (id.contains("24129d77-f289-4634-a34f-e00c623ccf5f".toUpperCase())) {
+      if (value <= 12) {
+        return "ไม่เป็น";
+      } else if (value <= 52) {
+        return "เสี่ยง";
+      } else if (value <= 100) {
+        return "เป็น";
+      } else {
+        return "";
+      }
     } else {
-      return "";
+      return "ไม่รองรับ";
     }
   }
 
-  Color _convertScoreToColor(double value) {
+  Color _convertScoreToColor(String id, double value) {
     if (value <= 12) {
       return Colors.blueAccent;
     } else if (value <= 52) {
@@ -373,5 +412,19 @@ class OverviewBloc extends Bloc<OverviewEvent, OverviewState> {
     } else {
       return "";
     }
+  }
+
+  String _initialTimeString(DateTime dateTime) {
+    if (dateTime != null) {
+      var dateFormat = new DateFormat('HH:mm');
+      String formattedDate = dateFormat.format(dateTime);
+      return formattedDate;
+    } else {
+      return "";
+    }
+  }
+
+  DateTime _convertToDate(String value) {
+    return DateFormat("yyyy-MM-ddTHH:mm:ssZ").parse(value);
   }
 }

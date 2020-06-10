@@ -1,11 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:frailtyprojectweb/bloc/new_temporary_code/new_temporary_code_bloc.dart';
 import 'package:frailtyprojectweb/bloc/overview/overview_bloc.dart';
 import 'package:frailtyprojectweb/bloc/province/province_bloc.dart';
+import 'package:frailtyprojectweb/model/Answer.dart';
 import 'package:frailtyprojectweb/model/ChartData.dart';
+import 'package:frailtyprojectweb/model/Questionnaire.dart';
+import 'package:frailtyprojectweb/model/ReportOverview.dart';
 import 'package:frailtyprojectweb/model/ReportPackWithAnswer.dart';
 import 'package:frailtyprojectweb/tools/ExportCsv.dart';
+import 'package:frailtyprojectweb/tools/ExportOverview.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
@@ -19,6 +26,8 @@ class OverviewPage extends StatefulWidget {
 class _OverviewPageState extends State<OverviewPage> {
   OverviewBloc _overviewBloc;
   ProvinceBloc _provinceBloc;
+  NewTemporaryCodeBloc _newTemporaryCodeBloc;
+
 
   String _province;
 
@@ -26,6 +35,8 @@ class _OverviewPageState extends State<OverviewPage> {
   Widget build(BuildContext context) {
     _overviewBloc = BlocProvider.of<OverviewBloc>(context);
     _provinceBloc = BlocProvider.of<ProvinceBloc>(context);
+    _newTemporaryCodeBloc = BlocProvider.of<NewTemporaryCodeBloc>(context);
+
 
     _province = "";
 
@@ -124,23 +135,59 @@ class _OverviewPageState extends State<OverviewPage> {
                                             width: 12,
                                           ),
                                           Container(
-                                            width: 170,
-                                            height: 40,
-                                            child: _buttonTemplete(
-                                              "ดาวน์โหลด CSV",
-                                              null,
-                                              () {
-                                                _exportCsv(
-                                                    "Overview-${state.province.length == 0 ? "ทั่วประเทศ" : state.province}",state.province,
+                                              width: 170,
+                                              height: 40,
+                                              child: BlocBuilder<
+                                                      NewTemporaryCodeBloc,
+                                                      NewTemporaryCodeState>(
+                                                  builder:
+                                                      (context, downloadState) {
+                                                    print(downloadState);
+                                                if (downloadState
+                                                    is NonNewTemporaryCodeState || downloadState is InitialNewTemporaryCodeState) {
+                                                  return _buttonTemplete(
+                                                    "ดาวน์โหลด CSV",
+                                                    null,
+                                                    () {
+                                                      showDownloadDialog(
+                                                          "Overview-${state.province.length == 0 ? "ทั่วประเทศ" : state.province}",
+                                                          state.province,
+                                                          state.listData);
+                                                      /*_newExportCsv(
+                                                    "Overview-${state.province.length == 0 ? "ทั่วประเทศ" : state.province}",
+                                                    state.province,
                                                     state.listData);
-                                              },
-                                              Colors.white,
-                                              Colors.black87,
-                                              Colors.teal,
-                                              minWidth: 100,
-                                              center: true,
-                                            ),
-                                          ),
+
+                                                 */
+                                                    },
+                                                    Colors.white,
+                                                    Colors.black87,
+                                                    Colors.teal,
+                                                    minWidth: 100,
+                                                    center: true,
+                                                  );
+                                                } else if (downloadState
+                                                    is DownloadingNewTemporaryCodeState) {
+                                                  return _buttonTemplete(
+                                                    "",
+                                                    null,
+                                                    () {},
+                                                    Colors.white,
+                                                    Colors.white,
+                                                    Colors.white,
+                                                    minWidth: 100,
+                                                    center: true,
+                                                    widget: SpinKitThreeBounce(
+                                                      color: Colors.teal,
+                                                      size: 26.0,
+                                                    )
+                                                  );
+                                                } else {
+                                                  return Container();
+                                                }
+                                              })
+                                              //Test
+                                              ),
                                         ],
                                       );
                                     } else {
@@ -337,10 +384,12 @@ class _OverviewPageState extends State<OverviewPage> {
     );
   }
 
-  void _exportCsv(String name,String province, List<ReportPackWithAnswer> list) {
+  void _exportCsv(
+      String name, String province, List<ReportPackWithAnswer> list) {
     ExportCsv exportCsv = ExportCsv();
     exportCsv.downloadOverviewData(
-        "Overview-${name != null ? name : "data"}",province,
+        "Overview-${name != null ? name : "data"}",
+        province,
         [
           "ID",
           "Questionnaire",
@@ -354,6 +403,165 @@ class _OverviewPageState extends State<OverviewPage> {
           "Status"
         ],
         list);
+  }
+
+  void showDownloadDialog(
+      String name, String province, List<ReportPackWithAnswer> list) async {
+
+    Map<String, Questionnaire> map = {};
+
+    List<String> listKey = list.map((e) {
+      map[e.answer.question.questionnaire.id] = e.answer.question.questionnaire;
+
+      return e.answer.question.questionnaire.id;
+    }).toList();
+
+    List<String> setOfKey = listKey.toSet().toList();
+
+    showDialog(
+      barrierDismissible: true,
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Colors.black.withAlpha(100),
+          alignment: Alignment.center,
+          child: Container(
+            margin: EdgeInsets.only(top: 40, bottom: 40),
+            constraints: BoxConstraints(maxWidth: 400),
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(100),
+                  blurRadius: 1.0,
+                )
+              ],
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+            ),
+            child: Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.white,
+                leading: IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: Icon(
+                    Icons.close,
+                    color: Colors.black.withAlpha(170),
+                  ),
+                ),
+                elevation: 0,
+                centerTitle: true,
+                title: Stack(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.only(right: 60),
+                      height: 56,
+                      child: Center(
+                        child: Text(
+                          "เลือกชุดแบบทดสอบ",
+                          textAlign: TextAlign.left,
+                          style: GoogleFonts.itim(
+                            textStyle: TextStyle(
+                                color: Colors.black.withAlpha(170),
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              body: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                ),
+                child: _insertDownloadPage(
+                    context, setOfKey, map, list, name, province),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _insertDownloadPage(
+      BuildContext context,
+      List<String> setOfKey,
+      Map<String, Questionnaire> map,
+      List<ReportPackWithAnswer> allList,
+      String name,
+      String province) {
+    ThemeData _theme = Theme.of(context);
+
+    return Stack(
+      children: [
+        Container(
+          color: Colors.white,
+          child: Stack(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 0, bottom: 0),
+                padding: EdgeInsets.only(bottom: 0),
+                child: ListView.builder(
+                    padding: EdgeInsets.only(top: 20, bottom: 50),
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: setOfKey != null ? (setOfKey.length) : 0,
+                    itemBuilder: (context, position) {
+                      return FlatButton(
+                        onPressed: () {
+                          List<ReportPackWithAnswer> newList = allList
+                              .where((i) => i.answer.question.questionnaire.id
+                                  .contains(setOfKey[position]))
+                              .toList();
+
+                          _newTemporaryCodeBloc.add(DownloadNewTemporaryCodeEvent(context,name, province, newList));
+
+                          //_province = _state.data[position].PROVINCE_NAME;
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.only(left: 16, right: 16),
+                          width: MediaQuery.of(context).size.width,
+                          height: 60,
+                          color: Colors.transparent,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "${map[setOfKey[position]] != null ? map[setOfKey[position]].name : ""}",
+                                style: GoogleFonts.itim(
+                                  textStyle: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.normal),
+                                ),
+                              ),
+                              position != (setOfKey.length - 1)
+                                  ? Container(
+                                      color: Colors.black12,
+                                      margin: EdgeInsets.only(top: 10),
+                                      width: MediaQuery.of(context).size.width,
+                                      height: 1,
+                                    )
+                                  : Container()
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+              )
+            ],
+          ),
+        )
+      ],
+    );
   }
 
   Widget _initialDataTable(List<DataRow> data) {
@@ -371,11 +579,13 @@ class _OverviewPageState extends State<OverviewPage> {
               DataColumn(label: _buildText("ชื่อชุดแบบทดสอบ")),
               //DataColumn(label: _buildText("ที่อยู่ผู้ถูกประเมิน")),
               DataColumn(label: _buildText("วันเดือนปีที่ประเมิน")),
+              DataColumn(label: _buildText("เวลา")),
               DataColumn(label: _buildText("ผลการประเมิน")),
+              DataColumn(label: _buildText("คะแนนที่ได้")),
               DataColumn(label: _buildText("ชื่อผู้ดำเนินการ")),
               DataColumn(label: _buildText("สถานะผู้ดำเนินการ")),
             ],
-            sortColumnIndex: 0,
+            sortColumnIndex: 1,
             sortAscending: false,
             rows: data != null ? data : []),
       ),
@@ -705,7 +915,8 @@ class _OverviewPageState extends State<OverviewPage> {
       double height = 60,
       double marginSide = 0,
       bool center = false,
-      bool bold = false}) {
+      bool bold = false,
+      Widget widget}) {
     return Container(
       width: MediaQuery.of(context).size.width,
       margin: EdgeInsets.only(left: marginSide, right: marginSide, top: 0),
@@ -741,18 +952,21 @@ class _OverviewPageState extends State<OverviewPage> {
                       width: image != null ? 15 : (center ? 0 : 15),
                     )
                   : Container(),
-              Text(
-                text,
-                textAlign: TextAlign.center,
-                //center ? TextAlign.center : TextAlign.start,
-                style: GoogleFonts.itim(
-                  textStyle: TextStyle(
-                    color: textColor,
-                    fontWeight: bold ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
+              widget != null
+                  ? widget
+                  : Text(
+                      text,
+                      textAlign: TextAlign.center,
+                      //center ? TextAlign.center : TextAlign.start,
+                      style: GoogleFonts.itim(
+                        textStyle: TextStyle(
+                          color: textColor,
+                          fontWeight:
+                              bold ? FontWeight.bold : FontWeight.normal,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
               image != null
                   ? SizedBox(
                       width: image != null ? 15 : (center ? 0 : 15),

@@ -22,6 +22,16 @@ class Answer {
     );
   }
 
+  factory Answer.fromJsonWithQuestionOnly(Map<String, dynamic> json) {
+    return new Answer(
+        id: json['id'],
+        questionId: json['questionId'],
+        answerPack: json['answerPack'],
+        value: json['value'],
+        question: Question.fromJson(json['question'])
+    );
+  }
+
   factory Answer.fromJsonWithQuestion(Map<String, dynamic> json) {
     return new Answer(
         id: json['id'],

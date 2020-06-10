@@ -88,7 +88,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
     var response = await http.get(url);
 
-    print(response);
+    //print(response);
 
 
     //print(response.body);

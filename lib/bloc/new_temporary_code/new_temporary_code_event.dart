@@ -12,6 +12,16 @@ class LoadDetailTemporaryCodeEvent extends NewTemporaryCodeEvent {
 
 }
 
+class DownloadNewTemporaryCodeEvent extends NewTemporaryCodeEvent {
+  final BuildContext context;
+  final String name;
+  final String province;
+  final List<ReportPackWithAnswer> list;
+
+  DownloadNewTemporaryCodeEvent(this.context, this.name, this.province,
+      this.list);
+}
+
 class LoadNewTemporaryCodeEvent extends NewTemporaryCodeEvent {}
 
 class ClearNewTemporaryCodeEvent extends NewTemporaryCodeEvent {}

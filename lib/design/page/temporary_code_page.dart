@@ -350,8 +350,7 @@ class _TemporaryCodePageState extends State<TemporaryCodePage> {
               ),
               body: BlocBuilder<NewTemporaryCodeBloc, NewTemporaryCodeState>(
                   builder: (context, state) {
-                if (state is LoadedDetailNewTemporaryCodeState ||
-                    state is LoadDetailTemporaryCodeEvent) {
+                if (state is LoadedDetailNewTemporaryCodeState) {
                   return Container(
                     decoration: BoxDecoration(color: Colors.white),
                     width: MediaQuery.of(this.context).size.width,
@@ -400,11 +399,11 @@ class _TemporaryCodePageState extends State<TemporaryCodePage> {
                               ),
                             ),
                             Text(
-                              "ข้อความ",
+                              state.active ? "ใช้งานได้" :"หมดอายุ",
                               textAlign: TextAlign.start,
                               style: GoogleFonts.itim(
                                 textStyle: TextStyle(
-                                    color: Colors.amber, fontSize: 20),
+                                    color: state.active ? Colors.teal : Colors.redAccent, fontSize: 20),
                               ),
                             )
                           ],

@@ -22,6 +22,13 @@ class LoadingNewTemporaryCodeState extends NewTemporaryCodeState {
   LoadingNewTemporaryCodeState() : super(null);
 }
 
+class DownloadingNewTemporaryCodeState extends NewTemporaryCodeState {
+  DownloadingNewTemporaryCodeState() : super(null);
+}
+
 class LoadedDetailNewTemporaryCodeState extends NewTemporaryCodeState {
-  LoadedDetailNewTemporaryCodeState(TemporaryCode code) : super(code);
+
+  final bool active;
+
+  LoadedDetailNewTemporaryCodeState(TemporaryCode code,this.active) : super(code);
 }

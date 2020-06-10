@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:frailtyprojectweb/design/home.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key});
@@ -10,8 +11,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPage extends State<LoginPage> {
-  String bgUrl =
-      "https://images.unsplash.com/photo-1566830646346-908d87490bba?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1650&q=80";
+  //String bgUrl = "https://images.unsplash.com/photo-1566830646346-908d87490bba?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1650&q=80";
+
+  String bgUrl = "https://www.up.ac.th/en/assets/images/sliders/slide-bg/2.jpg";
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +66,12 @@ class _LoginPage extends State<LoginPage> {
                               child: Text(
                                 'ระบบวิเคราะห์ผู้ป่วยภาวะเปราะบางในผู้สูงอายุ ',
                                 textAlign: TextAlign.start,
-                                style: TextStyle(
-                                    //fontFamily: "SukhumvitSet",
-                                    fontWeight: FontWeight.normal,
-                                    color: Colors.white.withAlpha(255),
-                                    fontSize: 28),
+                                style: GoogleFonts.itim(
+                                    textStyle: TextStyle(
+                                        //fontFamily: "SukhumvitSet",
+                                        fontWeight: FontWeight.normal,
+                                        color: Colors.white.withAlpha(255),
+                                        fontSize: 34)),
                               ),
                             ),
                           ),
@@ -103,9 +106,11 @@ class _LoginPage extends State<LoginPage> {
                                     onChanged: (value) {
                                       _username = value;
                                     },
-                                    style: TextStyle(),
+                                    style: GoogleFonts.itim(fontSize: 20),
                                     decoration: InputDecoration(
                                         hintText: "ชื่อผู้ใช้",
+                                        hintStyle: GoogleFonts.itim(fontSize: 20),
+                                        labelStyle: GoogleFonts.itim(fontSize: 20),
                                         border: OutlineInputBorder(),
                                         prefixIcon: Icon(Icons.person)),
                                   ),
@@ -115,11 +120,14 @@ class _LoginPage extends State<LoginPage> {
                                       left: 40, right: 40, top: 20),
                                   child: TextField(
                                     obscureText: true,
+                                    style: GoogleFonts.itim(fontSize: 20),
                                     onChanged: (value) {
                                       _password = value;
                                     },
                                     decoration: InputDecoration(
                                         hintText: "รหัสผ่าน",
+                                        hintStyle: GoogleFonts.itim(fontSize: 20),
+                                        labelStyle: GoogleFonts.itim(fontSize: 20),
                                         border: OutlineInputBorder(),
                                         prefixIcon: Icon(Icons.vpn_key)),
                                   ),
@@ -162,9 +170,10 @@ class _LoginPage extends State<LoginPage> {
                                         },
                                         child: Text(
                                           'ลงชื่อเข้าใช้',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16),
+                                          style: GoogleFonts.itim(
+                                              textStyle: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 22)),
                                         ),
                                       ),
                                     ))
@@ -229,12 +238,21 @@ class _LoginPage extends State<LoginPage> {
       builder: (BuildContext context) {
         // return object of type Dialog
         return AlertDialog(
-          title: new Text(title),
-          content: new Text(content),
+          title: new Text(
+            title,
+            style: GoogleFonts.itim(),
+          ),
+          content: new Text(
+            content,
+            style: GoogleFonts.itim(),
+          ),
           actions: <Widget>[
             // usually buttons at the bottom of the dialog
             new FlatButton(
-              child: new Text(confirmBtn),
+              child: new Text(
+                confirmBtn,
+                style: GoogleFonts.itim(),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
